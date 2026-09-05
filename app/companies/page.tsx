@@ -2,7 +2,11 @@
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 
 type Company = {
   id: string;
@@ -40,6 +44,7 @@ function CompaniesPageContent() {
   const initialIndustry = searchParams.get("industry") ?? "";
   const initialCountry = searchParams.get("country") ?? "";
   const initialSort = searchParams.get("sort") ?? "name-asc";
+
   const initialPage = Math.max(
     Number(searchParams.get("page") ?? "1"),
     1
@@ -52,6 +57,7 @@ function CompaniesPageContent() {
   const [page, setPage] = useState(initialPage);
 
   const [companies, setCompanies] = useState<Company[]>([]);
+
   const [pagination, setPagination] = useState({
     page: initialPage,
     limit: 9,
@@ -63,7 +69,7 @@ function CompaniesPageContent() {
   const [error, setError] = useState("");
 
   /*
-   * Keep filters synchronized with the URL.
+   * Keep URL synchronized with filters.
    */
   useEffect(() => {
     const params = new URLSearchParams();
@@ -105,7 +111,7 @@ function CompaniesPageContent() {
   ]);
 
   /*
-   * Fetch companies.
+   * Fetch companies whenever filters change.
    */
   useEffect(() => {
     const controller = new AbortController();
@@ -153,12 +159,17 @@ function CompaniesPageContent() {
         setCompanies(result.data);
         setPagination(result.pagination);
       } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") {
+        if (
+          err instanceof DOMException &&
+          err.name === "AbortError"
+        ) {
           return;
         }
 
         console.error(err);
-        setError("Unable to load companies. Please try again.");
+        setError(
+          "Unable to load companies. Please try again."
+        );
       } finally {
         setLoading(false);
       }
@@ -171,7 +182,7 @@ function CompaniesPageContent() {
   }, [search, industry, country, sort, page]);
 
   /*
-   * Reset pagination when filters change.
+   * Filter handlers
    */
   const updateSearch = (value: string) => {
     setSearch(value);
@@ -193,6 +204,9 @@ function CompaniesPageContent() {
     setPage(1);
   };
 
+  /*
+   * Clear filters
+   */
   const clearFilters = () => {
     setSearch("");
     setIndustry("");
@@ -287,7 +301,12 @@ function CompaniesPageContent() {
               stroke="currentColor"
               strokeWidth="1.8"
             >
-              <circle cx="11" cy="11" r="7" />
+              <circle
+                cx="11"
+                cy="11"
+                r="7"
+              />
+
               <path d="m20 20-4-4" />
             </svg>
 
@@ -305,6 +324,8 @@ function CompaniesPageContent() {
 
         {/* Filters */}
         <section className="mb-8 flex flex-col gap-3 sm:flex-row">
+
+          {/* Industry */}
           <select
             value={industry}
             onChange={(event) =>
@@ -312,7 +333,9 @@ function CompaniesPageContent() {
             }
             className="h-11 rounded-xl border border-zinc-900 bg-zinc-950 px-4 text-sm text-zinc-400 outline-none transition focus:border-zinc-700"
           >
-            <option value="">All industries</option>
+            <option value="">
+              All industries
+            </option>
 
             {industries.map((item) => (
               <option key={item} value={item}>
@@ -321,6 +344,7 @@ function CompaniesPageContent() {
             ))}
           </select>
 
+          {/* Country */}
           <select
             value={country}
             onChange={(event) =>
@@ -328,7 +352,9 @@ function CompaniesPageContent() {
             }
             className="h-11 rounded-xl border border-zinc-900 bg-zinc-950 px-4 text-sm text-zinc-400 outline-none transition focus:border-zinc-700"
           >
-            <option value="">All countries</option>
+            <option value="">
+              All countries
+            </option>
 
             {countries.map((item) => (
               <option key={item} value={item}>
@@ -337,6 +363,7 @@ function CompaniesPageContent() {
             ))}
           </select>
 
+          {/* Sort */}
           <select
             value={sort}
             onChange={(event) =>
@@ -361,6 +388,7 @@ function CompaniesPageContent() {
             </option>
           </select>
 
+          {/* Clear filters */}
           {hasFilters && (
             <button
               type="button"
@@ -375,24 +403,31 @@ function CompaniesPageContent() {
         {/* Active filters */}
         {hasFilters && (
           <div className="mb-8 flex flex-wrap gap-2">
+
             {search.trim() && (
               <FilterPill
                 label={`Search: ${search}`}
-                onRemove={() => updateSearch("")}
+                onRemove={() =>
+                  updateSearch("")
+                }
               />
             )}
 
             {industry && (
               <FilterPill
                 label={industry}
-                onRemove={() => updateIndustry("")}
+                onRemove={() =>
+                  updateIndustry("")
+                }
               />
             )}
 
             {country && (
               <FilterPill
                 label={country}
-                onRemove={() => updateCountry("")}
+                onRemove={() =>
+                  updateCountry("")
+                }
               />
             )}
 
@@ -405,13 +440,15 @@ function CompaniesPageContent() {
                     ? "Newest"
                     : "Featured"
                 }
-                onRemove={() => updateSort("name-asc")}
+                onRemove={() =>
+                  updateSort("name-asc")
+                }
               />
             )}
           </div>
         )}
 
-        {/* Results header */}
+        {/* Results count */}
         <div className="mb-5 flex items-center justify-between gap-4">
           <p className="text-sm text-zinc-600">
             {loading ? (
@@ -436,6 +473,7 @@ function CompaniesPageContent() {
         {/* Error */}
         {error && !loading && (
           <div className="mb-8 rounded-2xl border border-zinc-900 bg-zinc-950 p-8 text-center">
+
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-zinc-800 text-zinc-600">
               !
             </div>
@@ -464,34 +502,39 @@ function CompaniesPageContent() {
         {/* Loading */}
         {loading && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 9 }).map((_, index) => (
-              <div
-                key={index}
-                className="rounded-2xl border border-zinc-900 bg-zinc-950 p-6"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="h-12 w-12 animate-pulse rounded-xl bg-zinc-900" />
+            {Array.from({ length: 9 }).map(
+              (_, index) => (
+                <div
+                  key={index}
+                  className="rounded-2xl border border-zinc-900 bg-zinc-950 p-6"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="h-12 w-12 animate-pulse rounded-xl bg-zinc-900" />
 
-                  <div className="flex-1">
-                    <div className="h-4 w-32 animate-pulse rounded bg-zinc-900" />
+                    <div className="flex-1">
+                      <div className="h-4 w-32 animate-pulse rounded bg-zinc-900" />
 
-                    <div className="mt-3 h-3 w-20 animate-pulse rounded bg-zinc-900" />
+                      <div className="mt-3 h-3 w-20 animate-pulse rounded bg-zinc-900" />
+                    </div>
                   </div>
-                </div>
 
-                <div className="mt-6 h-3 w-full animate-pulse rounded bg-zinc-900" />
-                <div className="mt-3 h-3 w-5/6 animate-pulse rounded bg-zinc-900" />
-                <div className="mt-3 h-3 w-2/3 animate-pulse rounded bg-zinc-900" />
-              </div>
-            ))}
+                  <div className="mt-6 h-3 w-full animate-pulse rounded bg-zinc-900" />
+
+                  <div className="mt-3 h-3 w-5/6 animate-pulse rounded bg-zinc-900" />
+
+                  <div className="mt-3 h-3 w-2/3 animate-pulse rounded bg-zinc-900" />
+                </div>
+              )
+            )}
           </div>
         )}
 
-        {/* Empty */}
+        {/* Empty state */}
         {!loading &&
           !error &&
           companies.length === 0 && (
             <div className="rounded-2xl border border-zinc-900 bg-zinc-950 px-6 py-20 text-center">
+
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-zinc-800 text-xl text-zinc-600">
                 ∅
               </div>
@@ -522,15 +565,21 @@ function CompaniesPageContent() {
           !error &&
           companies.length > 0 && (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+
               {companies.map((company) => (
                 <Link
                   key={company.id}
                   href={`/companies/${company.slug}`}
                   className="group rounded-2xl border border-zinc-900 bg-zinc-950 p-6 transition duration-200 hover:border-zinc-700 hover:bg-zinc-900/60"
                 >
+                  {/* Company header */}
                   <div className="flex items-start justify-between gap-4">
+
                     <div className="flex min-w-0 items-start gap-4">
+
+                      {/* Logo */}
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 text-lg font-semibold text-zinc-300">
+
                         {company.logo ? (
                           <img
                             src={company.logo}
@@ -544,7 +593,9 @@ function CompaniesPageContent() {
                         )}
                       </div>
 
+                      {/* Name */}
                       <div className="min-w-0">
+
                         <h2 className="truncate text-base font-medium text-white transition group-hover:text-zinc-200">
                           {company.name}
                         </h2>
@@ -553,9 +604,11 @@ function CompaniesPageContent() {
                           {company.industry ||
                             "AI Company"}
                         </p>
+
                       </div>
                     </div>
 
+                    {/* Featured */}
                     {company.featured && (
                       <span className="shrink-0 rounded-full border border-zinc-800 px-2.5 py-1 text-[10px] uppercase tracking-wider text-zinc-500">
                         Featured
@@ -563,11 +616,14 @@ function CompaniesPageContent() {
                     )}
                   </div>
 
+                  {/* Description */}
                   <p className="mt-6 line-clamp-3 text-sm leading-6 text-zinc-500">
                     {company.description}
                   </p>
 
+                  {/* Metadata */}
                   <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 text-xs text-zinc-600">
+
                     {company.location && (
                       <span>
                         {company.location}
@@ -587,7 +643,9 @@ function CompaniesPageContent() {
                     )}
                   </div>
 
+                  {/* Footer */}
                   <div className="mt-6 flex items-center justify-between border-t border-zinc-900 pt-4">
+
                     <span className="text-xs text-zinc-700">
                       View company
                     </span>
@@ -595,6 +653,7 @@ function CompaniesPageContent() {
                     <span className="text-sm text-zinc-600 transition group-hover:translate-x-1 group-hover:text-zinc-300">
                       →
                     </span>
+
                   </div>
                 </Link>
               ))}
@@ -609,6 +668,7 @@ function CompaniesPageContent() {
               aria-label="Companies pagination"
               className="mt-10 flex items-center justify-center gap-2"
             >
+              {/* Previous */}
               <button
                 type="button"
                 disabled={page <= 1}
@@ -623,8 +683,11 @@ function CompaniesPageContent() {
                 ←
               </button>
 
+              {/* Page numbers */}
               {Array.from(
-                { length: pagination.totalPages },
+                {
+                  length: pagination.totalPages,
+                },
                 (_, index) => index + 1
               ).map((pageNumber) => (
                 <button
@@ -648,6 +711,7 @@ function CompaniesPageContent() {
                 </button>
               ))}
 
+              {/* Next */}
               <button
                 type="button"
                 disabled={
@@ -673,6 +737,9 @@ function CompaniesPageContent() {
   );
 }
 
+/*
+ * Filter pill
+ */
 function FilterPill({
   label,
   onRemove,
@@ -696,12 +763,19 @@ function FilterPill({
   );
 }
 
+/*
+ * Page wrapper
+ *
+ * Suspense is required because the page uses
+ * useSearchParams().
+ */
 export default function CompaniesPage() {
   return (
     <Suspense
       fallback={
         <main className="min-h-screen bg-black text-white">
           <div className="mx-auto max-w-6xl px-6 py-16">
+
             <div className="h-3 w-28 animate-pulse rounded bg-zinc-900" />
 
             <div className="mt-4 h-12 w-48 animate-pulse rounded bg-zinc-900" />
@@ -720,6 +794,7 @@ export default function CompaniesPage() {
                 )
               )}
             </div>
+
           </div>
         </main>
       }
