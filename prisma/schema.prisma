@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Company {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  logo        String?
+  description String
+
+  website     String?
+  industry    String?
+  location    String?
+  country     String?
+
+  foundedYear Int?
+  employees   String?
+  funding     String?
+  stage       String?
+
+  featured    Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+  @@index([industry])
+  @@index([country])
+  @@index([stage])
+}
